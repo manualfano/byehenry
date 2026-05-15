@@ -28,7 +28,7 @@ interface Fila {
 const FILAS: Fila[] = [
   // VENTAS
   { id: "ventas_brutas",     concepto: "VENTAS BRUTAS",             indent: 0, isBold: true, isTotal: true, showPct: true, dimLabel: true, separatorBefore: false, getValue: d => d.ventasBrutas },
-  { id: "funcionamiento",    concepto: "Funcionamiento",            indent: 1, isBold: true, showPct: true,  getValue: d => d.ventas.funcionamiento },
+  { id: "funcionamiento",    concepto: "Funcionamiento",            indent: 1, showPct: true,  getValue: d => d.ventas.funcionamiento },
   { id: "rest_delivery",     concepto: "Restaurant + Delivery",     indent: 2, getValue: d => d.ventas.restaurantDelivery },
   { id: "bar_ventas",        concepto: "Bar",                       indent: 2, getValue: d => d.ventas.bar },
   { id: "otros_ingresos",    concepto: "Otros ingresos operativos", indent: 1, getValue: d => d.ventas.otrosIngresosOperativos },
