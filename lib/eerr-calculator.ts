@@ -1,26 +1,34 @@
-// Lógica de cálculo del EERR desde datos crudos de Google Sheets
+// Lógica de cálculo del EERR
+// Ventas y totales: se leen directo del EERR sheet (ya calculados)
+// Viandas: se calculan desde Egresos (no están en el EERR)
 
-import type {
-  EgresosRow,
-  ImpagasRow,
-  EERRData,
-  MonthData,
-  SheetData,
-} from "@/types/eerr";
+import type { EgresosRow, EERRData, MonthData, SheetData } from "@/types/eerr";
 
-// Convierte números argentinos: "38.665.706,50" → 38665706.50
-export function parsePesosArg(value: string): number {
-  if (!value || value.trim() === "" || value.trim() === "-") return 0;
-  // Remover símbolo $ y espacios
-  const clean = value.replace(/\$/g, "").replace(/\s/g, "").trim();
-  if (!clean) return 0;
-  // Formato argentino: punto = miles, coma = decimales
-  // Reemplazar puntos de miles, luego coma decimal
-  const normalized = clean.replace(/\./g, "").replace(",", ".");
-  const num = parseFloat(normalized);
-  return isNaN(num) ? 0 : num;
+// Convierte un valor de celda a número.
+// Maneja: number, string con formato argentino ("38.665.706,50"), string plana ("38665706")
+export function parsePesosArg(value: string | number | null | undefined): number {
+  if (value === null || value === undefined || value === "") return 0;
+  if (typeof value === "number") return isNaN(value) ? 0 : value;
+  const s = String(value).replace(/\$/g, "").replace(/\s/g, "").trim();
+  if (!s || s === "-") return 0;
+  // Formato argentino: punto = miles, coma = decimal → normalizar
+  const normalized = s.replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(normalized);
+  return isNaN(n) ? 0 : n;
 }
 
+// Lee una celda del EERR por fila (0-based) y columna (0-based)
+function eerrVal(
+  rows: (string | number | null)[][],
+  rowIdx: number,
+  colIdx: number
+): number {
+  const row = rows[rowIdx];
+  if (!row) return 0;
+  return parsePesosArg(row[colIdx] as string | number | null);
+}
+
+// Suma importe de egresos (efectivo + banco + cobro) para una fila
 function importeEgreso(row: EgresosRow): number {
   return (
     parsePesosArg(row.efectivo) +
@@ -29,268 +37,134 @@ function importeEgreso(row: EgresosRow): number {
   );
 }
 
-// Filtrar egresos por mes y categoría
-function filtrarEgresosPorMesYCategoria(
+// Calcula viandas desde Egresos (no están en el EERR sheet)
+function calcularViandas(
   egresos: EgresosRow[],
-  mesExtr: string,
-  categorias: string[]
-): EgresosRow[] {
+  mesExtr: string
+): { viandasCocina: number; viandasLogistica: number } {
   const mesNorm = mesExtr.toLowerCase().trim();
-  return egresos.filter((r) => {
-    const mesFila = r.mesExtr.toLowerCase().trim();
-    const catFila = r.categoria.toLowerCase().trim();
+  const filasViandas = egresos.filter((r) => {
     return (
-      mesFila === mesNorm &&
-      categorias.some((c) => catFila === c.toLowerCase().trim())
+      r.mesExtr.toLowerCase().trim() === mesNorm &&
+      r.categoria.toLowerCase().trim() === "sueldos"
     );
   });
-}
 
-// Suma impagas filtradas por mes, estado y categorías (usa columna DEUDA)
-function sumarImpagasCMV(
-  impagas: ImpagasRow[],
-  mesImpagas: string,
-  categorias: string[]
-): number {
-  const mesNorm = mesImpagas.toLowerCase().trim();
-  return impagas
-    .filter((r) => {
-      const mesFila = r.mes.toLowerCase().trim();
-      const estadoFila = r.estado.toLowerCase().trim();
-      const catFila = r.categoria.toLowerCase().trim();
-      return (
-        mesFila === mesNorm &&
-        estadoFila === "impaga" &&
-        categorias.some((c) => catFila === c.toLowerCase().trim())
-      );
-    })
-    .reduce((acc, r) => acc + parsePesosArg(r.deuda), 0);
-}
-
-// Sueldos agrupados por subcategoría
-function calcularSueldos(
-  egresos: EgresosRow[],
-  mesExtr: string
-): EERRData["gastosOperativos"]["sueldos"] {
-  const filas = filtrarEgresosPorMesYCategoria(egresos, mesExtr, ["Sueldos"]);
-
-  const sumBySubcat = (subcat: string) =>
-    filas
+  const sumSubcat = (subcat: string) =>
+    filasViandas
       .filter(
-        (r) => r.subcategoriaSubeldos.toLowerCase().trim() === subcat.toLowerCase().trim()
+        (r) =>
+          r.subcategoriaSubeldos.toLowerCase().trim() ===
+          subcat.toLowerCase().trim()
       )
       .reduce((acc, r) => acc + importeEgreso(r), 0);
 
-  const general = sumBySubcat("General");
-  const cocina = sumBySubcat("Cocina");
-  const salon = sumBySubcat("Salón");
-  const barSeguridad = sumBySubcat("Bar - Seguridad");
-  const barRRPP = sumBySubcat("Bar - RRPP");
-  const barDJ = sumBySubcat("Bar - DJ");
-  const barSalonExtra30 = sumBySubcat("Bar - Salón Extra 30%");
-  const barCocinaExtra30 = sumBySubcat("Bar - Cocina Extra 30%");
-  const barGeneralExtra30 = sumBySubcat("Bar - General Extra 30%");
-  const viandasCocina = sumBySubcat("Cocina-Viandas");
-  const viandasLogistica = sumBySubcat("Logistica-Viandas");
-
-  const total =
-    general +
-    cocina +
-    salon +
-    barSeguridad +
-    barRRPP +
-    barDJ +
-    barSalonExtra30 +
-    barCocinaExtra30 +
-    barGeneralExtra30 +
-    viandasCocina +
-    viandasLogistica;
-
   return {
-    total,
-    general,
-    cocina,
-    salon,
-    barSeguridad,
-    barRRPP,
-    barDJ,
-    barSalonExtra30,
-    barCocinaExtra30,
-    barGeneralExtra30,
-    viandasCocina,
-    viandasLogistica,
+    viandasCocina: sumSubcat("Cocina-Viandas"),
+    viandasLogistica: sumSubcat("Logistica-Viandas"),
   };
 }
 
-// Servicios agrupados por proveedor
-function calcularServicios(
-  egresos: EgresosRow[],
-  mesExtr: string
-): EERRData["gastosOperativos"]["servicios"] {
-  const filas = filtrarEgresosPorMesYCategoria(egresos, mesExtr, ["Servicios"]);
-
-  const sumByProveedor = (proveedor: string) =>
-    filas
-      .filter(
-        (r) => r.proveedor.toLowerCase().trim() === proveedor.toLowerCase().trim()
-      )
-      .reduce((acc, r) => acc + importeEgreso(r), 0);
-
-  const electricidad = sumByProveedor("Edelap");
-  const agua = sumByProveedor("Absa");
-  const gas = sumByProveedor("Camuzzi");
-  const emergenciasMedicas = sumByProveedor("Sum Sa");
-  const seguros = sumByProveedor("Seguro Rivadavia");
-  const seguridadEHigiene = sumByProveedor("Javier Spegni");
-  const tiendaDePuntos = sumByProveedor("Tienda de puntos");
-  const asesoriaOrdenFinanciero = sumByProveedor("Manuel Alfano");
-  const contenedores = sumByProveedor("Esur");
-  const internetYTelefonia = sumByProveedor("Flow");
-
-  const total =
-    electricidad +
-    agua +
-    gas +
-    emergenciasMedicas +
-    seguros +
-    seguridadEHigiene +
-    tiendaDePuntos +
-    asesoriaOrdenFinanciero +
-    contenedores +
-    internetYTelefonia;
-
-  return {
-    total,
-    electricidad,
-    agua,
-    gas,
-    emergenciasMedicas,
-    seguros,
-    seguridadEHigiene,
-    tiendaDePuntos,
-    asesoriaOrdenFinanciero,
-    contenedores,
-    internetYTelefonia,
-  };
-}
-
-// Lee las ventas desde la hoja EERR del sheet de análisis
-function calcularVentasDesdeEERR(
-  eerrRaw: string[][],
-  mesKey: string
-): EERRData["ventas"] & { ventasBrutas: number } {
-  // La hoja EERR tiene una estructura con conceptos en filas y meses en columnas
-  // Buscamos la columna del mes por su cabecera
-  if (eerrRaw.length === 0) {
-    return {
-      ventasBrutas: 0,
-      funcionamiento: 0,
-      restaurantDelivery: 0,
-      bar: 0,
-      otrosIngresosOperativos: 0,
-      senas: 0,
-    };
-  }
-
-  // Encontrar columna del mes (primera fila es headers de meses)
-  const headerRow = eerrRaw[0];
-  const mesNorm = mesKey.toLowerCase().trim();
-
-  // Buscar la columna que coincide con el mes (ej: "abr 2026", "abr_2026", "Abril 2026")
-  let colIndex = -1;
-  for (let i = 1; i < headerRow.length; i++) {
-    const h = (headerRow[i] ?? "").toLowerCase().trim().replace(/\s+/g, "_");
-    if (h.includes(mesNorm.replace(/\s+/g, "_"))) {
-      colIndex = i;
-      break;
-    }
-  }
-
-  if (colIndex === -1) {
-    // Intentar búsqueda parcial por mes corto (ej: "abr")
-    const mesCorto = mesNorm.split(/[\s_]/)[0];
-    for (let i = 1; i < headerRow.length; i++) {
-      const h = (headerRow[i] ?? "").toLowerCase().trim();
-      if (h.startsWith(mesCorto)) {
-        colIndex = i;
-        break;
-      }
-    }
-  }
-
-  const getValorFila = (conceptoBuscado: string): number => {
-    if (colIndex === -1) return 0;
-    for (const row of eerrRaw) {
-      const concepto = (row[0] ?? "").toLowerCase().trim();
-      if (concepto.includes(conceptoBuscado.toLowerCase())) {
-        return parsePesosArg(row[colIndex] ?? "");
-      }
-    }
-    return 0;
-  };
-
-  const restaurantDelivery = getValorFila("restaurant") || getValorFila("delivery");
-  const bar = getValorFila("bar");
-  const otrosIngresosOperativos = getValorFila("otros ingresos");
-  const senas = getValorFila("seña") || getValorFila("sena");
-  const funcionamiento = restaurantDelivery + bar;
-
-  // Ventas brutas = suma de ingresos (excluimos "Ingresos Cuenta Corriente")
-  const ventasBrutas = getValorFila("ventas brutas") || (funcionamiento + otrosIngresosOperativos + senas);
-
-  return { ventasBrutas, funcionamiento, restaurantDelivery, bar, otrosIngresosOperativos, senas };
-}
+// Meses disponibles con índice de columna en el EERR sheet
+// eerrCol = índice 0-based de la columna "EERR en $" para ese mes
+// Estructura: Feb→col D (3), Mar→col G (6), Abr→col J (9)
+export const MESES_DISPONIBLES: MonthData[] = [
+  {
+    label: "Febrero 2026",
+    key: "feb_2026",
+    mesExtr: "febrero 2026",
+    mesImpagas: "Feb 26",
+    eerrCol: 3,
+  },
+  {
+    label: "Marzo 2026",
+    key: "mar_2026",
+    mesExtr: "marzo 2026",
+    mesImpagas: "Mar 26",
+    eerrCol: 6,
+  },
+  {
+    label: "Abril 2026",
+    key: "abr_2026",
+    mesExtr: "abril 2026",
+    mesImpagas: "Abr 26",
+    eerrCol: 9,
+  },
+];
 
 export function calcularEERR(data: SheetData, mes: MonthData): EERRData {
-  const { egresos, impagas, eerr } = data;
+  const { egresos, eerr } = data;
+  const c = mes.eerrCol; // columna EERR en $ para este mes
 
-  // --- Ventas desde EERR sheet ---
-  const ventasData = calcularVentasDesdeEERR(eerr, mes.key);
-  const ventasBrutas = ventasData.ventasBrutas;
+  // --- VENTAS (filas 4-9, índices 3-8) ---
+  const ventasBrutas = eerrVal(eerr, 3, c);
+  const funcionamiento = eerrVal(eerr, 4, c);
+  const restaurantDelivery = eerrVal(eerr, 5, c);
+  const bar = eerrVal(eerr, 6, c);
+  const otrosIngresosOperativos = eerrVal(eerr, 7, c);
+  const senas = eerrVal(eerr, 8, c);
 
-  // --- CMV pagado por categoría (de Egresos) ---
-  const catsCMV = ["Alimentos", "Bebidas sin alcohol", "Bebidas con alcohol", "Cervezas"];
-  const sumCatEgresos = (cat: string) =>
-    filtrarEgresosPorMesYCategoria(egresos, mes.mesExtr, [cat])
-      .reduce((acc, r) => acc + importeEgreso(r), 0);
+  // --- CMV (filas 10-16, índices 9-15) ---
+  const cmvTotal = eerrVal(eerr, 9, c);
+  const alimentos = eerrVal(eerr, 10, c);
+  const bebidasSinAlcohol = eerrVal(eerr, 11, c);
+  const bebidasConAlcohol = eerrVal(eerr, 12, c);
+  const cervezas = eerrVal(eerr, 13, c);
+  const saldoImpagas = eerrVal(eerr, 14, c);
+  const cmvNetoCuentaCorriente = eerrVal(eerr, 15, c);
 
-  const alimentos = sumCatEgresos("Alimentos");
-  const bebidasSinAlcohol = sumCatEgresos("Bebidas sin alcohol");
-  const bebidasConAlcohol = sumCatEgresos("Bebidas con alcohol");
-  const cervezas = sumCatEgresos("Cervezas");
+  // --- UTILIDAD BRUTA (fila 20, índice 19) ---
+  const utilidadBruta = eerrVal(eerr, 19, c);
 
-  // --- Saldo impagas CMV (usa columna DEUDA) ---
-  const saldoImpagas = sumarImpagasCMV(impagas, mes.mesImpagas, catsCMV);
-  const cmvNetoCuentaCorriente = alimentos + bebidasSinAlcohol + bebidasConAlcohol + cervezas - saldoImpagas;
-  const cmvTotal = alimentos + bebidasSinAlcohol + bebidasConAlcohol + cervezas;
+  // --- SUELDOS (filas 21-30, índices 20-29) ---
+  const sueldosTotal = eerrVal(eerr, 20, c);
+  const general = eerrVal(eerr, 21, c);
+  const cocina = eerrVal(eerr, 22, c);
+  const salon = eerrVal(eerr, 23, c);
+  const barGeneralExtra30 = eerrVal(eerr, 24, c);
+  const barCocinaExtra30 = eerrVal(eerr, 25, c);
+  const barSalonExtra30 = eerrVal(eerr, 26, c);
+  const barSeguridad = eerrVal(eerr, 27, c);
+  const barRRPP = eerrVal(eerr, 28, c);
+  const barDJ = eerrVal(eerr, 29, c);
 
-  const utilidadBruta = ventasBrutas - cmvTotal;
+  // Viandas vienen de Egresos (no están en el EERR sheet)
+  const { viandasCocina, viandasLogistica } = calcularViandas(egresos, mes.mesExtr);
 
-  // --- Gastos operativos ---
-  const sueldos = calcularSueldos(egresos, mes.mesExtr);
-  const servicios = calcularServicios(egresos, mes.mesExtr);
+  // --- SERVICIOS (filas 34-46, índices 33-45) ---
+  const serviciosTotal = eerrVal(eerr, 33, c);
+  const electricidad = eerrVal(eerr, 34, c);
+  const agua = eerrVal(eerr, 35, c);
+  const gas = eerrVal(eerr, 36, c);
+  const emergenciasMedicas = eerrVal(eerr, 37, c);
+  const seguros = eerrVal(eerr, 38, c);
+  const seguridadEHigiene = eerrVal(eerr, 39, c);
+  const tiendaDePuntos = eerrVal(eerr, 40, c);
+  const asesoriaOrdenFinanciero = eerrVal(eerr, 41, c);
+  const contenedores = eerrVal(eerr, 42, c);
+  // fila 44 = Grupo electrógeno, fila 45 = Soft POS (no en el spec del EERR display)
+  const internetYTelefonia = eerrVal(eerr, 45, c);
 
-  const publicidad = filtrarEgresosPorMesYCategoria(egresos, mes.mesExtr, ["Publicidad ", "Publicidad"])
-    .reduce((acc, r) => acc + importeEgreso(r), 0);
+  // --- OTROS RUBROS (filas 47-52, índices 46-51) ---
+  const publicidad = eerrVal(eerr, 46, c);
+  const produccion = eerrVal(eerr, 47, c);
+  const gastosAdmin = eerrVal(eerr, 48, c);
+  const limpieza = eerrVal(eerr, 49, c);
+  const mantenimiento = eerrVal(eerr, 50, c);
+  const otrasDeudas = eerrVal(eerr, 51, c);
 
-  const produccion = filtrarEgresosPorMesYCategoria(egresos, mes.mesExtr, ["Gasto de producción", "Gasto de produccion"])
-    .reduce((acc, r) => acc + importeEgreso(r), 0);
+  // --- RESULTADO (filas 53-60) ---
+  const resultadoAntesDeImpuestos = eerrVal(eerr, 52, c);
+  const impuestos = eerrVal(eerr, 53, c);
+  const resultadoNeto = eerrVal(eerr, 59, c);
 
-  const gastosAdmin = filtrarEgresosPorMesYCategoria(egresos, mes.mesExtr, ["Gasto administrativo"])
-    .reduce((acc, r) => acc + importeEgreso(r), 0);
-
-  const limpieza = filtrarEgresosPorMesYCategoria(egresos, mes.mesExtr, ["Limpieza"])
-    .reduce((acc, r) => acc + importeEgreso(r), 0);
-
-  const mantenimiento = filtrarEgresosPorMesYCategoria(egresos, mes.mesExtr, ["Mantenimiento"])
-    .reduce((acc, r) => acc + importeEgreso(r), 0);
-
-  // Otras deudas impagas (Limpieza + Mantenimiento de impagas)
-  const otrasDeudas = sumarImpagasCMV(impagas, mes.mesImpagas, ["Limpieza", "Mantenimiento"]);
-
+  // Gastos operativos total = lo que está en EERR
+  // (sueldos + viandas + servicios + publicidad + produccion + admin + limpieza + mantenimiento + otras)
   const gastosOperativosTotal =
-    sueldos.total +
-    servicios.total +
+    sueldosTotal +
+    viandasCocina +
+    viandasLogistica +
+    serviciosTotal +
     publicidad +
     produccion +
     gastosAdmin +
@@ -298,22 +172,15 @@ export function calcularEERR(data: SheetData, mes: MonthData): EERRData {
     mantenimiento +
     otrasDeudas;
 
-  // Impuestos desde egresos
-  const impuestos = filtrarEgresosPorMesYCategoria(egresos, mes.mesExtr, ["Impuestos", "Impuesto"])
-    .reduce((acc, r) => acc + importeEgreso(r), 0);
-
-  const resultadoAntesDeImpuestos = utilidadBruta - gastosOperativosTotal;
-  const resultadoNeto = resultadoAntesDeImpuestos - impuestos;
-
   return {
     mes,
     ventasBrutas,
     ventas: {
-      funcionamiento: ventasData.funcionamiento,
-      restaurantDelivery: ventasData.restaurantDelivery,
-      bar: ventasData.bar,
-      otrosIngresosOperativos: ventasData.otrosIngresosOperativos,
-      senas: ventasData.senas,
+      funcionamiento,
+      restaurantDelivery,
+      bar,
+      otrosIngresosOperativos,
+      senas,
     },
     cmv: {
       total: cmvTotal,
@@ -327,8 +194,33 @@ export function calcularEERR(data: SheetData, mes: MonthData): EERRData {
     utilidadBruta,
     gastosOperativos: {
       total: gastosOperativosTotal,
-      sueldos,
-      servicios,
+      sueldos: {
+        total: sueldosTotal + viandasCocina + viandasLogistica,
+        general,
+        cocina,
+        salon,
+        barSeguridad,
+        barRRPP,
+        barDJ,
+        barSalonExtra30,
+        barCocinaExtra30,
+        barGeneralExtra30,
+        viandasCocina,
+        viandasLogistica,
+      },
+      servicios: {
+        total: serviciosTotal,
+        electricidad,
+        agua,
+        gas,
+        emergenciasMedicas,
+        seguros,
+        seguridadEHigiene,
+        tiendaDePuntos,
+        asesoriaOrdenFinanciero,
+        contenedores,
+        internetYTelefonia,
+      },
       publicidad,
       produccion,
       gastosAdmin,
@@ -342,15 +234,10 @@ export function calcularEERR(data: SheetData, mes: MonthData): EERRData {
   };
 }
 
-// Calcula variación porcentual entre dos valores
-export function calcVariacion(actual: number, anterior: number): number | undefined {
+export function calcVariacion(
+  actual: number,
+  anterior: number
+): number | undefined {
   if (!anterior || anterior === 0) return undefined;
   return ((actual - anterior) / Math.abs(anterior)) * 100;
 }
-
-// Lista de meses disponibles
-export const MESES_DISPONIBLES: MonthData[] = [
-  { label: "Febrero 2026", key: "feb_2026", mesExtr: "febrero 2026", mesImpagas: "Feb 26" },
-  { label: "Marzo 2026", key: "mar_2026", mesExtr: "marzo 2026", mesImpagas: "Mar 26" },
-  { label: "Abril 2026", key: "abr_2026", mesExtr: "abril 2026", mesImpagas: "Abr 26" },
-];

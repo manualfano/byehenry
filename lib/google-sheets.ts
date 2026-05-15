@@ -13,7 +13,7 @@ function getAuthClient() {
 
   if (!clientEmail || !privateKey) {
     throw new Error(
-      "Faltan credenciales de Google Sheets: GOOGLE_SHEETS_CLIENT_EMAIL o GOOGLE_SHEETS_PRIVATE_KEY"
+      "Faltan credenciales: GOOGLE_SHEETS_CLIENT_EMAIL o GOOGLE_SHEETS_PRIVATE_KEY"
     );
   }
 
@@ -27,56 +27,56 @@ function getAuthClient() {
 async function fetchSheetRange(
   sheetId: string,
   range: string
-): Promise<string[][]> {
+): Promise<(string | number | null)[][]> {
   const auth = getAuthClient();
   const sheets = google.sheets({ version: "v4", auth });
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: sheetId,
     range,
+    // UNFORMATTED_VALUE devuelve números reales en vez de strings formateados
+    valueRenderOption: "UNFORMATTED_VALUE",
   });
 
-  return (response.data.values ?? []) as string[][];
+  return (response.data.values ?? []) as (string | number | null)[][];
 }
 
-function parseEgresosRows(rows: string[][]): EgresosRow[] {
+function parseEgresosRows(rows: (string | number | null)[][]): EgresosRow[] {
   if (rows.length < 2) return [];
-  // Salteamos la fila de encabezados (índice 0)
   return rows.slice(1).map((row) => ({
-    fechaPago: row[0] ?? "",
-    fechaRemito: row[1] ?? "",
-    semana: row[2] ?? "",
-    mesExtr: row[3] ?? "",
-    descripcion: row[4] ?? "",
-    proveedor: row[5] ?? "",
-    categoria: row[6] ?? "",
-    subcategoriaSubeldos: row[7] ?? "",
-    efectivo: row[8] ?? "",
-    banco: row[9] ?? "",
-    cobro: row[10] ?? "",
-    nCheque: row[11] ?? "",
+    fechaPago: String(row[0] ?? ""),
+    fechaRemito: String(row[1] ?? ""),
+    semana: String(row[2] ?? ""),
+    mesExtr: String(row[3] ?? ""),
+    descripcion: String(row[4] ?? ""),
+    proveedor: String(row[5] ?? ""),
+    categoria: String(row[6] ?? ""),
+    subcategoriaSubeldos: String(row[7] ?? ""),
+    efectivo: row[8] ?? 0,
+    banco: row[9] ?? 0,
+    cobro: row[10] ?? 0,
+    nCheque: String(row[11] ?? ""),
   }));
 }
 
-function parseImpagasRows(rows: string[][]): ImpagasRow[] {
+function parseImpagasRows(rows: (string | number | null)[][]): ImpagasRow[] {
   if (rows.length < 2) return [];
   return rows.slice(1).map((row) => ({
-    fechaRemito: row[0] ?? "",
-    mes: row[1] ?? "",
-    pago: row[2] ?? "",
-    numero: row[3] ?? "",
-    estado: row[4] ?? "",
-    semana: row[5] ?? "",
-    proveedor: row[6] ?? "",
-    categoria: row[7] ?? "",
-    importe: row[8] ?? "",
-    pagado: row[9] ?? "",
-    deuda: row[10] ?? "",
+    fechaRemito: String(row[0] ?? ""),
+    mes: String(row[1] ?? ""),
+    pago: String(row[2] ?? ""),
+    numero: String(row[3] ?? ""),
+    estado: String(row[4] ?? ""),
+    semana: String(row[5] ?? ""),
+    proveedor: String(row[6] ?? ""),
+    categoria: String(row[7] ?? ""),
+    importe: row[8] ?? 0,
+    pagado: row[9] ?? 0,
+    deuda: row[10] ?? 0,
   }));
 }
 
 export async function getSheetData(forceRefresh = false): Promise<SheetData> {
-  // Intentar caché primero
   if (!forceRefresh) {
     const cached = cache.get<SheetData>(CACHE_KEY_SHEETS);
     if (cached) return cached;
@@ -86,16 +86,15 @@ export async function getSheetData(forceRefresh = false): Promise<SheetData> {
   const eerrSheetId = process.env.SHEET_ID_EERR;
 
   if (!adminSheetId || !eerrSheetId) {
-    throw new Error(
-      "Faltan IDs de Google Sheets: SHEET_ID_ADMIN o SHEET_ID_EERR"
-    );
+    throw new Error("Faltan IDs: SHEET_ID_ADMIN o SHEET_ID_EERR");
   }
 
-  // Fetch en paralelo de las tres hojas
+  // Fetch en paralelo — las 3 hojas al mismo tiempo
   const [egresosRaw, impagasRaw, eerrRaw] = await Promise.all([
     fetchSheetRange(adminSheetId, "Egresos!A:L"),
     fetchSheetRange(adminSheetId, "Impagas!A:K"),
-    fetchSheetRange(eerrSheetId, "EERR !A:Z"),
+    // EERR: hasta col P para cubrir los 4 meses con 3 cols cada uno (D-O)
+    fetchSheetRange(eerrSheetId, "EERR !A:P"),
   ]);
 
   const data: SheetData = {
