@@ -171,7 +171,12 @@ export function calcularEERR(data: SheetData, mes: MonthData): EERRData {
 
   // RESULTADO
   const resultadoAntesDeImpuestos = eerrVal(eerr, 54, c);
-  const impuestos                 = eerrVal(eerr, 55, c);
+  const impuestosTotal            = eerrVal(eerr, 55, c);
+  const impOtros                  = eerrVal(eerr, 56, c);
+  const impIIBB                   = eerrVal(eerr, 57, c);
+  const impIVA                    = eerrVal(eerr, 58, c);
+  const impCredito                = eerrVal(eerr, 59, c);
+  const impDebito                 = eerrVal(eerr, 60, c);
   const resultadoNeto             = eerrVal(eerr, 61, c);
 
   const gastosOperativosTotal =
@@ -210,7 +215,14 @@ export function calcularEERR(data: SheetData, mes: MonthData): EERRData {
       publicidad, produccion, gastosAdmin, limpieza, mantenimiento, otrasDeudas,
     },
     resultadoAntesDeImpuestos,
-    impuestos,
+    impuestos: {
+      total: impuestosTotal,
+      otros: impOtros,
+      iibb: impIIBB,
+      iva: impIVA,
+      credito: impCredito,
+      debito: impDebito,
+    },
     resultadoNeto,
   };
 }

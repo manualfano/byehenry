@@ -101,8 +101,13 @@ const FILAS: Fila[] = [
 
   // RESULTADO
   { id: "res_antes_imp",     concepto: "UT NETA ANTES DE IMPUESTOS", indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.resultadoAntesDeImpuestos },
-  { id: "impuestos",         concepto: "Impuestos",                 indent: 1, showPct: true, getValue: d => d.impuestos },
-  { id: "resultado_neto",    concepto: "RESULTADO NETO",            indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.resultadoNeto },
+  { id: "impuestos",         concepto: "Impuestos",                  indent: 1, isBold: true, showPct: true, getValue: d => d.impuestos.total },
+  { id: "imp_otros",         concepto: "Otros",                      indent: 2, showPct: true, getValue: d => d.impuestos.otros },
+  { id: "imp_iibb",          concepto: "IIBB",                       indent: 2, showPct: true, getValue: d => d.impuestos.iibb },
+  { id: "imp_iva",           concepto: "IVA",                        indent: 2, showPct: true, getValue: d => d.impuestos.iva },
+  { id: "imp_credito",       concepto: "Impuesto al crédito",        indent: 2, showPct: true, getValue: d => d.impuestos.credito },
+  { id: "imp_debito",        concepto: "Impuesto al débito",         indent: 2, showPct: true, getValue: d => d.impuestos.debito },
+  { id: "resultado_neto",    concepto: "RESULTADO NETO",             indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.resultadoNeto },
 ];
 
 // Grupos colapsables (soporta anidado — la lógica de hidden propaga en cascada)
@@ -113,6 +118,7 @@ const GRUPOS: Record<string, string[]> = {
   costo_operativo:  ["sueldos_header", "alquileres", "servicios_header", "publicidad", "produccion", "gastos_admin", "limpieza", "mantenimiento", "otras_deudas"],
   sueldos_header:   ["s_general", "s_cocina", "s_salon", "s_bar_gen_30", "s_bar_coc_30", "s_bar_sal_30", "s_bar_seg", "s_bar_rrpp", "s_bar_dj", "s_viandas_coc", "s_viandas_log"],
   servicios_header: ["sv_elec", "sv_agua", "sv_gas", "sv_emerg", "sv_seg", "sv_seghi", "sv_tienda", "sv_asesor", "sv_cont", "sv_electrogeno", "sv_softpos", "sv_inet"],
+  impuestos:        ["imp_otros", "imp_iibb", "imp_iva", "imp_credito", "imp_debito"],
 };
 
 function pct(monto: number, base: number): string {
@@ -127,7 +133,7 @@ function montoColor(fila: Fila, valor: number): string {
 
 export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(
-    new Set(["ventas_brutas", "funcionamiento", "cmv_total", "costo_operativo", "sueldos_header", "servicios_header"])
+    new Set(["ventas_brutas", "funcionamiento", "cmv_total", "costo_operativo", "sueldos_header", "servicios_header", "impuestos"])
   );
   const [copied, setCopied] = useState(false);
 

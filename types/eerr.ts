@@ -66,7 +66,14 @@ export interface EERRData {
     otrasDeudas: number;
   };
   resultadoAntesDeImpuestos: number;
-  impuestos: number;
+  impuestos: {
+    total: number;
+    otros: number;
+    iibb: number;
+    iva: number;
+    credito: number;
+    debito: number;
+  };
   resultadoNeto: number;
 }
 
