@@ -236,7 +236,7 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
                   "grid px-4 items-center transition-colors",
                   gridCols,
                   fila.isTotal ? "py-3" : "py-2",
-                  isZebra ? "bg-surface" : "bg-surface-hover",
+                  fila.dimLabel ? "bg-surface-hover" : isZebra ? "bg-surface" : "bg-surface-hover",
                   hasChildren && "cursor-pointer hover:bg-surface-hover"
                 )}
                 onClick={hasChildren ? () => toggle(fila.id) : undefined}
@@ -247,11 +247,10 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
               >
                 {/* Concepto */}
                 <div className="flex items-center gap-2 min-w-0" style={{ paddingLeft: `${fila.indent * 18}px` }}>
-                  {hasChildren && (
-                    <span className="text-accent-gold flex-shrink-0">
-                      {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                    </span>
-                  )}
+                  {/* Reserva siempre el ancho del chevron para alinear texto entre siblings */}
+                  <span className="flex-shrink-0 w-3.5 h-3.5 flex items-center justify-center text-accent-gold">
+                    {hasChildren && (isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />)}
+                  </span>
                   <span className={cn(
                     "truncate font-body",
                     fila.dimLabel
