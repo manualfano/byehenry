@@ -27,7 +27,7 @@ interface Fila {
 const FILAS: Fila[] = [
   // VENTAS
   { id: "ventas_brutas",     concepto: "VENTAS BRUTAS",             indent: 0, isBold: true, isTotal: true, showPct: true,  separatorBefore: false, getValue: d => d.ventasBrutas },
-  { id: "funcionamiento",    concepto: "Funcionamiento",            indent: 1, showPct: true,  getValue: d => d.ventas.funcionamiento },
+  { id: "funcionamiento",    concepto: "Funcionamiento",            indent: 1, isBold: true, showPct: true,  getValue: d => d.ventas.funcionamiento },
   { id: "rest_delivery",     concepto: "Restaurant + Delivery",     indent: 2, getValue: d => d.ventas.restaurantDelivery },
   { id: "bar_ventas",        concepto: "Bar",                       indent: 2, getValue: d => d.ventas.bar },
   { id: "otros_ingresos",    concepto: "Otros ingresos operativos", indent: 1, getValue: d => d.ventas.otrosIngresosOperativos },
@@ -45,45 +45,59 @@ const FILAS: Fila[] = [
   // UTILIDAD BRUTA
   { id: "util_bruta",        concepto: "UTILIDAD BRUTA",            indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.utilidadBruta },
 
+  // COSTO OPERATIVO (grupo contenedor)
+  { id: "costo_operativo",   concepto: "COSTO OPERATIVO",           indent: 0, isBold: true, isTotal: true, showPct: true, separatorBefore: true,
+    getValue: d =>
+      d.gastosOperativos.sueldos.total +
+      d.gastosOperativos.alquileres +
+      d.gastosOperativos.servicios.total +
+      d.gastosOperativos.publicidad +
+      d.gastosOperativos.produccion +
+      d.gastosOperativos.gastosAdmin +
+      d.gastosOperativos.limpieza +
+      d.gastosOperativos.mantenimiento +
+      d.gastosOperativos.otrasDeudas,
+  },
+
   // SUELDOS
-  { id: "sueldos_header",    concepto: "Sueldos",                   indent: 0, isBold: true, isTotal: true, showPct: true, separatorBefore: true, getValue: d => d.gastosOperativos.sueldos.total },
-  { id: "s_general",         concepto: "General",                   indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.general },
-  { id: "s_cocina",          concepto: "Cocina",                    indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.cocina },
-  { id: "s_salon",           concepto: "Salón",                     indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.salon },
-  { id: "s_bar_gen_30",      concepto: "Bar - General Extra 30%",   indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.barGeneralExtra30 },
-  { id: "s_bar_coc_30",      concepto: "Bar - Cocina Extra 30%",    indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.barCocinaExtra30 },
-  { id: "s_bar_sal_30",      concepto: "Bar - Salón Extra 30%",     indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.barSalonExtra30 },
-  { id: "s_bar_seg",         concepto: "Bar - Seguridad",           indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.barSeguridad },
-  { id: "s_bar_rrpp",        concepto: "Bar - RRPP",                indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.barRRPP },
-  { id: "s_bar_dj",          concepto: "Bar - DJ",                  indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.barDJ },
-  { id: "s_viandas_coc",     concepto: "Viandas cocina",            indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.viandasCocina },
-  { id: "s_viandas_log",     concepto: "Viandas logística",         indent: 1, showPct: true, getValue: d => d.gastosOperativos.sueldos.viandasLogistica },
+  { id: "sueldos_header",    concepto: "Sueldos",                   indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.sueldos.total },
+  { id: "s_general",         concepto: "General",                   indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.general },
+  { id: "s_cocina",          concepto: "Cocina",                    indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.cocina },
+  { id: "s_salon",           concepto: "Salón",                     indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.salon },
+  { id: "s_bar_gen_30",      concepto: "Bar - General Extra 30%",   indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.barGeneralExtra30 },
+  { id: "s_bar_coc_30",      concepto: "Bar - Cocina Extra 30%",    indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.barCocinaExtra30 },
+  { id: "s_bar_sal_30",      concepto: "Bar - Salón Extra 30%",     indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.barSalonExtra30 },
+  { id: "s_bar_seg",         concepto: "Bar - Seguridad",           indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.barSeguridad },
+  { id: "s_bar_rrpp",        concepto: "Bar - RRPP",                indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.barRRPP },
+  { id: "s_bar_dj",          concepto: "Bar - DJ",                  indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.barDJ },
+  { id: "s_viandas_coc",     concepto: "Viandas cocina",            indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.viandasCocina },
+  { id: "s_viandas_log",     concepto: "Viandas logística",         indent: 2, showPct: true, getValue: d => d.gastosOperativos.sueldos.viandasLogistica },
 
   // ALQUILERES
-  { id: "alquileres",        concepto: "Alquileres",                indent: 0, isBold: true, isTotal: true, showPct: true, separatorBefore: true, getValue: d => d.gastosOperativos.alquileres },
+  { id: "alquileres",        concepto: "Alquileres",                indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.alquileres },
 
   // SERVICIOS
-  { id: "servicios_header",  concepto: "Servicios",                 indent: 0, isBold: true, isTotal: true, showPct: true, separatorBefore: true, getValue: d => d.gastosOperativos.servicios.total },
-  { id: "sv_elec",           concepto: "Electricidad",              indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.electricidad },
-  { id: "sv_agua",           concepto: "Agua",                      indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.agua },
-  { id: "sv_gas",            concepto: "Gas",                       indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.gas },
-  { id: "sv_emerg",          concepto: "Emergencias médicas",       indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.emergenciasMedicas },
-  { id: "sv_seg",            concepto: "Seguros",                   indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.seguros },
-  { id: "sv_seghi",          concepto: "Seguridad e higiene",       indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.seguridadEHigiene },
-  { id: "sv_tienda",         concepto: "Tienda de puntos",          indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.tiendaDePuntos },
-  { id: "sv_asesor",         concepto: "Asesoría Orden Financiero", indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.asesoriaOrdenFinanciero },
-  { id: "sv_cont",           concepto: "Contenedores",              indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.contenedores },
-  { id: "sv_electrogeno",    concepto: "Grupo electrógeno",         indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.grupoElectrogeno },
-  { id: "sv_softpos",        concepto: "Soft POS (Restosoft)",      indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.softPOS },
-  { id: "sv_inet",           concepto: "Internet y telefonía",      indent: 1, showPct: true, getValue: d => d.gastosOperativos.servicios.internetYTelefonia },
+  { id: "servicios_header",  concepto: "Servicios",                 indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.servicios.total },
+  { id: "sv_elec",           concepto: "Electricidad",              indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.electricidad },
+  { id: "sv_agua",           concepto: "Agua",                      indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.agua },
+  { id: "sv_gas",            concepto: "Gas",                       indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.gas },
+  { id: "sv_emerg",          concepto: "Emergencias médicas",       indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.emergenciasMedicas },
+  { id: "sv_seg",            concepto: "Seguros",                   indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.seguros },
+  { id: "sv_seghi",          concepto: "Seguridad e higiene",       indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.seguridadEHigiene },
+  { id: "sv_tienda",         concepto: "Tienda de puntos",          indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.tiendaDePuntos },
+  { id: "sv_asesor",         concepto: "Asesoría Orden Financiero", indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.asesoriaOrdenFinanciero },
+  { id: "sv_cont",           concepto: "Contenedores",              indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.contenedores },
+  { id: "sv_electrogeno",    concepto: "Grupo electrógeno",         indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.grupoElectrogeno },
+  { id: "sv_softpos",        concepto: "Soft POS (Restosoft)",      indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.softPOS },
+  { id: "sv_inet",           concepto: "Internet y telefonía",      indent: 2, showPct: true, getValue: d => d.gastosOperativos.servicios.internetYTelefonia },
 
-  // OTROS RUBROS
-  { id: "publicidad",        concepto: "Publicidad",                indent: 0, isBold: true, isTotal: true, showPct: true, separatorBefore: true, getValue: d => d.gastosOperativos.publicidad },
-  { id: "produccion",        concepto: "Producción",                indent: 0, isBold: true, isTotal: true, showPct: true, getValue: d => d.gastosOperativos.produccion },
-  { id: "gastos_admin",      concepto: "Gastos admin",              indent: 0, isBold: true, isTotal: true, showPct: true, getValue: d => d.gastosOperativos.gastosAdmin },
-  { id: "limpieza",          concepto: "Limpieza",                  indent: 0, isBold: true, isTotal: true, showPct: true, getValue: d => d.gastosOperativos.limpieza },
-  { id: "mantenimiento",     concepto: "Mantenimiento",             indent: 0, isBold: true, isTotal: true, showPct: true, getValue: d => d.gastosOperativos.mantenimiento },
-  { id: "otras_deudas",      concepto: "Otras deudas impagas",      indent: 0, isBold: true, isTotal: true, showPct: true, getValue: d => d.gastosOperativos.otrasDeudas },
+  // OTROS RUBROS OPERATIVOS
+  { id: "publicidad",        concepto: "Publicidad",                indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.publicidad },
+  { id: "produccion",        concepto: "Producción",                indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.produccion },
+  { id: "gastos_admin",      concepto: "Gastos admin",              indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.gastosAdmin },
+  { id: "limpieza",          concepto: "Limpieza",                  indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.limpieza },
+  { id: "mantenimiento",     concepto: "Mantenimiento",             indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.mantenimiento },
+  { id: "otras_deudas",      concepto: "Otras deudas impagas",      indent: 1, isBold: true, showPct: true, getValue: d => d.gastosOperativos.otrasDeudas },
 
   // RESULTADO
   { id: "res_antes_imp",     concepto: "UT NETA ANTES DE IMPUESTOS", indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.resultadoAntesDeImpuestos },
@@ -91,10 +105,12 @@ const FILAS: Fila[] = [
   { id: "resultado_neto",    concepto: "RESULTADO NETO",            indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.resultadoNeto },
 ];
 
-// Grupos colapsables
+// Grupos colapsables (soporta anidado — la lógica de hidden propaga en cascada)
 const GRUPOS: Record<string, string[]> = {
-  ventas_brutas:    ["funcionamiento", "rest_delivery", "bar_ventas", "otros_ingresos", "senas"],
+  ventas_brutas:    ["funcionamiento", "otros_ingresos", "senas"],
+  funcionamiento:   ["rest_delivery", "bar_ventas"],
   cmv_total:        ["alimentos", "beb_sin_alc", "beb_con_alc", "cervezas", "saldo_impagas", "cmv_neto_cc"],
+  costo_operativo:  ["sueldos_header", "alquileres", "servicios_header", "publicidad", "produccion", "gastos_admin", "limpieza", "mantenimiento", "otras_deudas"],
   sueldos_header:   ["s_general", "s_cocina", "s_salon", "s_bar_gen_30", "s_bar_coc_30", "s_bar_sal_30", "s_bar_seg", "s_bar_rrpp", "s_bar_dj", "s_viandas_coc", "s_viandas_log"],
   servicios_header: ["sv_elec", "sv_agua", "sv_gas", "sv_emerg", "sv_seg", "sv_seghi", "sv_tienda", "sv_asesor", "sv_cont", "sv_electrogeno", "sv_softpos", "sv_inet"],
   res_antes_imp:    ["impuestos"],
@@ -112,7 +128,7 @@ function montoColor(fila: Fila, valor: number): string {
 
 export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(
-    new Set(["ventas_brutas", "cmv_total", "sueldos_header", "servicios_header", "res_antes_imp"])
+    new Set(["ventas_brutas", "funcionamiento", "cmv_total", "costo_operativo", "sueldos_header", "servicios_header", "res_antes_imp"])
   );
   const [copied, setCopied] = useState(false);
 
@@ -141,10 +157,18 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
     setTimeout(() => setCopied(false), 2000);
   }, [eerr, eerrComparacion]);
 
-  // Calcular visibilidad
+  // Calcular visibilidad con cascada: si un padre está oculto, sus hijos también
   const hidden = new Set<string>();
-  for (const [parentId, childIds] of Object.entries(GRUPOS)) {
-    if (!expanded.has(parentId)) childIds.forEach((c) => hidden.add(c));
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [parentId, childIds] of Object.entries(GRUPOS)) {
+      if (!expanded.has(parentId) || hidden.has(parentId)) {
+        for (const c of childIds) {
+          if (!hidden.has(c)) { hidden.add(c); changed = true; }
+        }
+      }
+    }
   }
 
   const conComparacion = !!eerrComparacion;
