@@ -21,12 +21,13 @@ interface Fila {
   isBold?: boolean;
   isTotal?: boolean;      // fila de totales (tipografía más grande)
   colorResult?: boolean;  // verde/rojo según positivo/negativo
+  dimLabel?: boolean;     // label en gris (text-secondary)
   separatorBefore?: boolean;
 }
 
 const FILAS: Fila[] = [
   // VENTAS
-  { id: "ventas_brutas",     concepto: "VENTAS BRUTAS",             indent: 0, isBold: true, isTotal: true, showPct: true,  separatorBefore: false, getValue: d => d.ventasBrutas },
+  { id: "ventas_brutas",     concepto: "VENTAS BRUTAS",             indent: 0, isBold: true, isTotal: true, showPct: true, dimLabel: true, separatorBefore: false, getValue: d => d.ventasBrutas },
   { id: "funcionamiento",    concepto: "Funcionamiento",            indent: 1, isBold: true, showPct: true,  getValue: d => d.ventas.funcionamiento },
   { id: "rest_delivery",     concepto: "Restaurant + Delivery",     indent: 2, getValue: d => d.ventas.restaurantDelivery },
   { id: "bar_ventas",        concepto: "Bar",                       indent: 2, getValue: d => d.ventas.bar },
@@ -34,7 +35,7 @@ const FILAS: Fila[] = [
   { id: "senas",             concepto: "Señas",                     indent: 1, getValue: d => d.ventas.senas },
 
   // CMV
-  { id: "cmv_total",         concepto: "CMV",                       indent: 0, isBold: true, isTotal: true, showPct: true, separatorBefore: true, getValue: d => d.cmv.total },
+  { id: "cmv_total",         concepto: "CMV",                       indent: 1, isBold: true, showPct: true, separatorBefore: true, getValue: d => d.cmv.total },
   { id: "alimentos",         concepto: "Alimentos (Pagas)",         indent: 1, showPct: true, getValue: d => d.cmv.alimentos },
   { id: "beb_sin_alc",       concepto: "Bebidas sin alcohol (Pagas)", indent: 1, showPct: true, getValue: d => d.cmv.bebidasSinAlcohol },
   { id: "beb_con_alc",       concepto: "Bebidas con alcohol (Pagas)", indent: 1, showPct: true, getValue: d => d.cmv.bebidasConAlcohol },
@@ -101,13 +102,13 @@ const FILAS: Fila[] = [
 
   // RESULTADO
   { id: "res_antes_imp",     concepto: "UT NETA ANTES DE IMPUESTOS", indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.resultadoAntesDeImpuestos },
-  { id: "impuestos",         concepto: "Impuestos",                  indent: 1, isBold: true, showPct: true, getValue: d => d.impuestos.total },
+  { id: "impuestos",         concepto: "IMPUESTOS",                  indent: 1, isBold: true, showPct: true, getValue: d => d.impuestos.total },
   { id: "imp_otros",         concepto: "Otros",                      indent: 2, showPct: true, getValue: d => d.impuestos.otros },
   { id: "imp_iibb",          concepto: "IIBB",                       indent: 2, showPct: true, getValue: d => d.impuestos.iibb },
   { id: "imp_iva",           concepto: "IVA",                        indent: 2, showPct: true, getValue: d => d.impuestos.iva },
   { id: "imp_credito",       concepto: "Impuesto al crédito",        indent: 2, showPct: true, getValue: d => d.impuestos.credito },
   { id: "imp_debito",        concepto: "Impuesto al débito",         indent: 2, showPct: true, getValue: d => d.impuestos.debito },
-  { id: "resultado_neto",    concepto: "RESULTADO NETO",             indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, separatorBefore: true, getValue: d => d.resultadoNeto },
+  { id: "resultado_neto",    concepto: "RESULTADO NETO",             indent: 0, isBold: true, isTotal: true, showPct: true, colorResult: true, dimLabel: true, separatorBefore: true, getValue: d => d.resultadoNeto },
 ];
 
 // Grupos colapsables (soporta anidado — la lógica de hidden propaga en cascada)
@@ -254,7 +255,8 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
                   <span className={cn(
                     "truncate font-body",
                     fila.isTotal ? "text-sm font-bold text-text-primary" : fila.isBold ? "text-sm font-semibold text-accent-bone" : "text-sm text-text-secondary",
-                    fila.indent === 0 && "text-accent-bone"
+                    fila.indent === 0 && "text-accent-bone",
+                    fila.dimLabel && "text-text-secondary"
                   )}>
                     {fila.concepto}
                   </span>
