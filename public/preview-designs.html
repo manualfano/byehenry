@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bye Henry — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #EFF2F6;
+  --surface:      #FFFFFF;
+  --surface-2:    #F8FAFB;
+  --border:       #E3E8EF;
+  --border-soft:  #EEF1F5;
+  --accent:       #00C896;
+  --accent-2:     #00A87A;
+  --accent-glow:  rgba(0, 200, 150, 0.18);
+  --accent-light: #E8FBF5;
+  --text-1:       #0A1628;
+  --text-2:       #4A5568;
+  --text-3:       #94A3B8;
+  --positive:     #00B87A;
+  --positive-bg:  #E6FAF3;
+  --negative:     #F5425A;
+  --negative-bg:  #FEF0F2;
+  --warning:      #F59E0B;
+  --sidebar-w:    220px;
+  --radius:       12px;
+  --radius-sm:    8px;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:    0 4px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:    0 12px 40px rgba(0,0,0,.1), 0 2px 8px rgba(0,0,0,.05);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100vh;
+  display: flex;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════
+   SIDEBAR
+══════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.logo-badge {
+  width: 32px; height: 32px;
+  background: var(--text-1);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: var(--accent);
+  letter-spacing: -.03em;
+  flex-shrink: 0;
+}
+
+.logo-text { display: flex; flex-direction: column; line-height: 1; }
+.logo-name  { font-size: 13px; font-weight: 800; color: var(--text-1); letter-spacing: -.02em; }
+.logo-sub   { font-size: 10px; color: var(--text-3); font-weight: 400; margin-top: 1px; }
+
+.sidebar-section-label {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-3);
+  padding: 20px 20px 8px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px;
+  border-radius: 0;
+  font-size: 13px; font-weight: 500; color: var(--text-2);
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+  text-decoration: none;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--text-1); }
+.nav-item.active {
+  color: var(--accent-2);
+  background: var(--accent-light);
+  font-weight: 600;
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 4px; bottom: 4px;
+  width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+}
+.nav-icon {
+  width: 18px; height: 18px; flex-shrink: 0;
+  opacity: .6;
+}
+.nav-item.active .nav-icon { opacity: 1; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent-light); color: var(--accent-2);
+  font-size: 9px; font-weight: 700;
+  padding: 2px 6px; border-radius: 20px;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  border-top: 1px solid var(--border-soft);
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.user-info { display: flex; flex-direction: column; line-height: 1.2; }
+.user-name  { font-size: 12px; font-weight: 600; color: var(--text-1); }
+.user-role  { font-size: 10px; color: var(--text-3); }
+
+/* ══════════════════════════════
+   MAIN CONTENT
+══════════════════════════════ */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* TOP BAR */
+.topbar {
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  position: sticky; top: 0; z-index: 10;
+}
+
+.topbar-title {
+  display: flex; flex-direction: column; line-height: 1.2;
+}
+.topbar-title h1 { font-size: 15px; font-weight: 800; color: var(--text-1); letter-spacing: -.02em; }
+.topbar-title span { font-size: 11px; color: var(--text-3); font-weight: 400; }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--positive-bg); border: 1px solid rgba(0,184,122,.2);
+  border-radius: 20px; padding: 5px 12px;
+  font-size: 11px; font-weight: 600; color: var(--positive);
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--positive); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none; transition: all .15s;
+}
+.btn-outline {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-2);
+}
+.btn-outline:hover { background: var(--surface-2); border-color: #CBD5E1; }
+.btn-primary {
+  background: var(--text-1); color: #fff;
+}
+.btn-primary:hover { background: #1a2a42; }
+
+.select-group { display: flex; align-items: center; gap: 6px; }
+.select-label { font-size: 11px; font-weight: 600; color: var(--text-3); }
+
+.select-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 6px 12px;
+  font-size: 12px; font-weight: 600; color: var(--text-1); cursor: pointer;
+}
+.select-pill.primary { border-color: rgba(0,200,150,.4); background: var(--accent-light); color: var(--accent-2); }
+.select-arrow { font-size: 10px; color: var(--text-3); }
+
+/* CONTENT AREA */
+.content { padding: 24px 28px; display: flex; flex-direction: column; gap: 24px; }
+
+/* DIVIDER */
+.accent-divider {
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent) 0%, rgba(0,200,150,.3) 60%, transparent 100%);
+  border-radius: 2px;
+}
+
+/* ══════════════════════════════
+   KPI CARDS
+══════════════════════════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+.kpi-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.kpi-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--accent-glow) 0%, transparent 60%);
+  pointer-events: none; opacity: 0;
+  transition: opacity .2s;
+}
+.kpi-card:hover::after { opacity: 1; }
+
+.kpi-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.kpi-label { font-size: 11px; font-weight: 600; color: var(--text-3); letter-spacing: .04em; text-transform: uppercase; }
+.kpi-trend {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px;
+}
+.kpi-trend.up   { background: var(--positive-bg); color: var(--positive); }
+.kpi-trend.down { background: var(--negative-bg);  color: var(--negative);  }
+.kpi-trend.warn { background: #FEF3C7; color: var(--warning); }
+
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px; font-weight: 600;
+  color: var(--text-1); letter-spacing: -.03em;
+  line-height: 1;
+}
+.kpi-value.neg { color: var(--negative); }
+.kpi-value.pos { color: var(--positive); }
+
+.kpi-bottom { display: flex; align-items: flex-end; justify-content: space-between; }
+.kpi-compare { font-size: 11px; color: var(--text-3); }
+.kpi-compare strong { color: var(--text-2); font-weight: 600; }
+
+/* Sparkline */
+.sparkline { width: 64px; height: 24px; }
+
+/* ══════════════════════════════
+   EERR TABLE
+══════════════════════════════ */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.table-title { font-size: 14px; font-weight: 800; color: var(--text-1); letter-spacing: -.02em; }
+.table-subtitle { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+.col-headers {
+  display: grid;
+  grid-template-columns: 260px 1fr 72px 1fr 72px;
+  padding: 10px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  gap: 4px;
+}
+.col-h { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-3); }
+.col-h:not(:first-child) { text-align: right; }
+.col-h.primary-month { color: var(--accent-2); }
+.col-h.compare-month { color: var(--text-3); }
+
+/* TABLE ROWS */
+.tr {
+  display: grid;
+  grid-template-columns: 260px 1fr 72px 1fr 72px;
+  padding: 0 20px;
+  gap: 4px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-soft);
+  transition: background .1s;
+}
+.tr:last-child { border-bottom: none; }
+.tr:hover { background: #FAFCFB; }
+
+/* Level 0 - totals */
+.tr-0 { min-height: 44px; background: var(--surface); }
+.tr-0 .tc-name { font-size: 12.5px; font-weight: 800; color: var(--text-1); letter-spacing: -.01em; }
+.tr-0 .tc-val  { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-1); text-align: right; }
+.tr-0 .tc-pct  { text-align: right; }
+
+/* Level 1 - sections */
+.tr-1 { min-height: 38px; }
+.tr-1 .tc-name { font-size: 12px; font-weight: 600; color: var(--text-2); padding-left: 16px; }
+.tr-1 .tc-val  { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: var(--text-2); text-align: right; }
+.tr-1 .tc-pct  { text-align: right; }
+
+/* Level 2 - details */
+.tr-2 { min-height: 34px; background: var(--surface-2); }
+.tr-2 .tc-name { font-size: 11.5px; font-weight: 400; color: var(--text-3); padding-left: 32px; }
+.tr-2 .tc-val  { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 400; color: var(--text-3); text-align: right; }
+.tr-2 .tc-pct  { text-align: right; }
+
+/* Separator row */
+.tr-sep { border-top: 1.5px solid var(--border); }
+.tr-sep-accent { border-top: 2px solid var(--accent); }
+
+/* Result rows */
+.tr-result .tc-val.pos { color: var(--positive); }
+.tr-result .tc-val.neg { color: var(--negative); }
+.tr-result { background: linear-gradient(90deg, rgba(0,200,150,.04), transparent); }
+
+/* PCT badges */
+.pct-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -.02em;
+  float: right;
+}
+.pct-neutral { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border-soft); }
+.pct-accent  { background: var(--accent-light); color: var(--accent-2); border: 1px solid rgba(0,200,150,.2); }
+.pct-neg     { background: var(--negative-bg); color: var(--negative); border: 1px solid rgba(245,66,90,.15); }
+
+/* Compare column (dimmed) */
+.dim { opacity: .55; }
+
+/* Accent left rule */
+.tr-0.sep-accent { position: relative; }
+.tr-0.sep-accent::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--accent);
+}
+
+/* ══════════════════════════════
+   MONTH CHIP
+══════════════════════════════ */
+.month-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+}
+.month-chip.a { background: var(--accent-light); color: var(--accent-2); }
+.month-chip.b { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+.month-dot { width: 6px; height: 6px; border-radius: 50%; }
+.month-dot.a { background: var(--accent); }
+.month-dot.b { background: var(--text-3); }
+
+/* ══════════════════════════════
+   FOOTER BAR
+══════════════════════════════ */
+.table-footer {
+  padding: 10px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex; align-items: center; gap: 12px;
+}
+.footer-note { font-size: 10.5px; color: var(--text-3); }
+.footer-note strong { color: var(--text-2); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">BH</div>
+    <div class="logo-text">
+      <span class="logo-name">Bye Henry</span>
+      <span class="logo-sub">Craft Bar</span>
+    </div>
+  </div>
+
+  <div class="sidebar-section-label">Finanzas</div>
+
+  <a class="nav-item" href="#">
+    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+      <rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/>
+      <rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/>
+    </svg>
+    Dashboard
+  </a>
+
+  <a class="nav-item active" href="#">
+    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M3 10h14M3 5h14M3 15h8"/>
+    </svg>
+    EERR
+    <span class="nav-badge">LIVE</span>
+  </a>
+
+  <a class="nav-item" href="#">
+    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+      <circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/>
+    </svg>
+    Cash Flow
+  </a>
+
+  <a class="nav-item" href="#">
+    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M4 15l4-4 3 3 5-6"/>
+    </svg>
+    Proveedores
+  </a>
+
+  <div class="sidebar-section-label">Sistema</div>
+
+  <a class="nav-item" href="#">
+    <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+      <circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/>
+    </svg>
+    Configuración
+  </a>
+
+  <div class="sidebar-bottom">
+    <div class="avatar">FA</div>
+    <div class="user-info">
+      <span class="user-name">Federico A.</span>
+      <span class="user-role">Admin</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════════════════════════════
+     MAIN
+════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-title">
+      <h1>Estado de Resultados</h1>
+      <span>Datos en tiempo real desde Google Sheets</span>
+    </div>
+
+    <div class="topbar-right">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        Sincronizado · hace 3 min
+      </div>
+
+      <div class="select-group">
+        <span class="select-label">Mes</span>
+        <div class="select-pill primary">
+          <span class="month-dot a"></span>
+          Abril 2026
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+
+      <div class="select-group">
+        <span class="select-label">vs</span>
+        <div class="select-pill">
+          <span class="month-dot b"></span>
+          Marzo 2026
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+
+      <button class="btn btn-outline">
+        <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 10a6 6 0 1 1 1.5 4M4 10V6M4 10H8"/>
+        </svg>
+        Actualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <div class="accent-divider"></div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+
+      <!-- Ventas Brutas -->
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Ventas Brutas</span>
+          <span class="kpi-trend up">↑ 2.4%</span>
+        </div>
+        <div class="kpi-value">$38.6M</div>
+        <div class="kpi-bottom">
+          <span class="kpi-compare">vs <strong>$42.4M</strong> mar</span>
+          <svg class="sparkline" viewBox="0 0 64 24" fill="none">
+            <polyline points="0,20 10,16 20,18 30,12 40,10 50,8 64,6" stroke="#00C896" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="0,20 10,16 20,18 30,12 40,10 50,8 64,6" stroke="url(#sg)" stroke-width="0" fill="url(#sg)" opacity=".15"/>
+            <defs>
+              <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00C896"/>
+                <stop offset="100%" stop-color="#00C896" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+
+      <!-- CMV -->
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">CMV</span>
+          <span class="kpi-trend warn">↑ 1.5pp</span>
+        </div>
+        <div class="kpi-value">55.6%</div>
+        <div class="kpi-bottom">
+          <span class="kpi-compare">vs <strong>54.1%</strong> mar</span>
+          <svg class="sparkline" viewBox="0 0 64 24" fill="none">
+            <polyline points="0,12 10,10 20,11 30,10 40,13 50,14 64,16" stroke="#F59E0B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Utilidad Bruta -->
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Utilidad Bruta</span>
+          <span class="kpi-trend down">↓ 2pp</span>
+        </div>
+        <div class="kpi-value">44%</div>
+        <div class="kpi-bottom">
+          <span class="kpi-compare">vs <strong>46%</strong> mar</span>
+          <svg class="sparkline" viewBox="0 0 64 24" fill="none">
+            <polyline points="0,8 10,9 20,8 30,10 40,12 50,14 64,16" stroke="#F5425A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Resultado Neto -->
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-label">Resultado Neto</span>
+          <span class="kpi-trend up">↑ 26%</span>
+        </div>
+        <div class="kpi-value neg">-$4.5M</div>
+        <div class="kpi-bottom">
+          <span class="kpi-compare">vs <strong>-$6.1M</strong> mar</span>
+          <svg class="sparkline" viewBox="0 0 64 24" fill="none">
+            <polyline points="0,20 10,20 20,18 30,18 40,16 50,14 64,12" stroke="#00C896" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- EERR TABLE -->
+    <div class="table-card">
+
+      <div class="table-header">
+        <div>
+          <div class="table-title">Detalle del EERR</div>
+          <div class="table-subtitle">Todos los rubros · Click para expandir secciones</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="month-chip a"><span class="month-dot a"></span>Abril 2026</div>
+          <div class="month-chip b"><span class="month-dot b"></span>Marzo 2026</div>
+          <button class="btn btn-outline" style="font-size:11px;padding:5px 12px">
+            <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4H4v12h12v-4M12 4h4v4M9 11l7-7"/></svg>
+            Exportar
+          </button>
+        </div>
+      </div>
+
+      <!-- Column headers -->
+      <div class="col-headers">
+        <span class="col-h">Concepto</span>
+        <span class="col-h primary-month">Abril 2026 $</span>
+        <span class="col-h primary-month">%</span>
+        <span class="col-h compare-month">Marzo 2026 $</span>
+        <span class="col-h compare-month">%</span>
+      </div>
+
+      <!-- ── VENTAS BRUTAS ── -->
+      <div class="tr tr-0 sep-accent">
+        <span class="tc-name">VENTAS BRUTAS</span>
+        <span class="tc-val">$38.665.706</span>
+        <span class="tc-pct"><span class="pct-badge pct-accent">100%</span></span>
+        <span class="tc-val dim">$42.469.378</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">100%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Funcionamiento</span>
+        <span class="tc-val">$36.995.210</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">95.7%</span></span>
+        <span class="tc-val dim">$33.921.001</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">79.9%</span></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Restaurant + Delivery</span>
+        <span class="tc-val">$23.240.510</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$20.093.751</span>
+        <span class="tc-pct"></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Bar</span>
+        <span class="tc-val">$13.754.700</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$13.827.250</span>
+        <span class="tc-pct"></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Otros ingresos operativos</span>
+        <span class="tc-val">$1.660.496</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">4.3%</span></span>
+        <span class="tc-val dim">$8.384.377</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">19.7%</span></span>
+      </div>
+
+      <!-- ── CMV ── -->
+      <div class="tr tr-0 tr-sep-accent">
+        <span class="tc-name">CMV</span>
+        <span class="tc-val">$21.513.136</span>
+        <span class="tc-pct"><span class="pct-badge pct-neg">55.6%</span></span>
+        <span class="tc-val dim">$22.982.832</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neg">54.1%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Alimentos (Pagas)</span>
+        <span class="tc-val">$8.423.718</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">21.8%</span></span>
+        <span class="tc-val dim">$6.830.276</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">16.1%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Bebidas sin alcohol (Pagas)</span>
+        <span class="tc-val">$2.054.246</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">5.3%</span></span>
+        <span class="tc-val dim">$1.802.752</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">4.2%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Bebidas con alcohol (Pagas)</span>
+        <span class="tc-val">$2.718.251</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">7.0%</span></span>
+        <span class="tc-val dim">$5.484.093</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">12.9%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Cervezas (Pagas)</span>
+        <span class="tc-val">$3.446.595</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">8.9%</span></span>
+        <span class="tc-val dim">$5.571.962</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">13.1%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Saldo proveedores (Impagas)</span>
+        <span class="tc-val">$4.191.665</span>
+        <span class="tc-pct"><span class="pct-badge pct-neg">10.8%</span></span>
+        <span class="tc-val dim">$3.293.750</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">7.8%</span></span>
+      </div>
+
+      <!-- ── UTILIDAD BRUTA ── -->
+      <div class="tr tr-0 tr-sep tr-result">
+        <span class="tc-name">UTILIDAD BRUTA</span>
+        <span class="tc-val pos">$17.152.570</span>
+        <span class="tc-pct"><span class="pct-badge pct-accent">44%</span></span>
+        <span class="tc-val dim">$19.486.546</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">46%</span></span>
+      </div>
+
+      <!-- ── SUELDOS ── -->
+      <div class="tr tr-0 tr-sep">
+        <span class="tc-name">Sueldos</span>
+        <span class="tc-val">$12.713.182</span>
+        <span class="tc-pct"><span class="pct-badge pct-neg">32.9%</span></span>
+        <span class="tc-val dim">$14.245.182</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neg">33.5%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">General</span>
+        <span class="tc-val">$4.349.589</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">11.2%</span></span>
+        <span class="tc-val dim">$3.653.089</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">8.6%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Cocina</span>
+        <span class="tc-val">$2.578.613</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">6.7%</span></span>
+        <span class="tc-val dim">$4.525.963</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">10.7%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Salón</span>
+        <span class="tc-val">$3.353.130</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">8.7%</span></span>
+        <span class="tc-val dim">$3.427.830</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">8.1%</span></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Bar - Seguridad</span>
+        <span class="tc-val">$915.500</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$1.009.800</span>
+        <span class="tc-pct"></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Bar - RRPP</span>
+        <span class="tc-val">$223.350</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$712.700</span>
+        <span class="tc-pct"></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Bar - DJ</span>
+        <span class="tc-val">$345.000</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$520.000</span>
+        <span class="tc-pct"></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Viandas cocina</span>
+        <span class="tc-val">$538.500</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">—</span>
+        <span class="tc-pct"></span>
+      </div>
+
+      <!-- ── SERVICIOS ── -->
+      <div class="tr tr-0 tr-sep">
+        <span class="tc-name">Servicios</span>
+        <span class="tc-val">$3.648.174</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">9.4%</span></span>
+        <span class="tc-val dim">$3.794.894</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">8.9%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Electricidad</span>
+        <span class="tc-val">$2.371.522</span>
+        <span class="tc-pct"><span class="pct-badge pct-neg">6.1%</span></span>
+        <span class="tc-val dim">$2.071.012</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neg">4.9%</span></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Gas</span>
+        <span class="tc-val">$193.180</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$222.407</span>
+        <span class="tc-pct"></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Seguros</span>
+        <span class="tc-val">$363.185</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$230.890</span>
+        <span class="tc-pct"></span>
+      </div>
+      <div class="tr tr-2">
+        <span class="tc-name">Internet y telefonía</span>
+        <span class="tc-val">$141.032</span>
+        <span class="tc-pct"></span>
+        <span class="tc-val dim">$139.082</span>
+        <span class="tc-pct"></span>
+      </div>
+
+      <!-- ── OTROS ── -->
+      <div class="tr tr-0 tr-sep">
+        <span class="tc-name">Producción</span>
+        <span class="tc-val">$2.945.000</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">7.6%</span></span>
+        <span class="tc-val dim">$3.215.000</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">7.6%</span></span>
+      </div>
+      <div class="tr tr-0">
+        <span class="tc-name">Limpieza</span>
+        <span class="tc-val">$675.132</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">1.7%</span></span>
+        <span class="tc-val dim">$930.834</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">2.2%</span></span>
+      </div>
+      <div class="tr tr-0">
+        <span class="tc-name">Gastos admin</span>
+        <span class="tc-val">$530.000</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">1.4%</span></span>
+        <span class="tc-val dim">$1.527.300</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">3.6%</span></span>
+      </div>
+      <div class="tr tr-0">
+        <span class="tc-name">Mantenimiento</span>
+        <span class="tc-val">$375.377</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">1.0%</span></span>
+        <span class="tc-val dim">$671.741</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">1.6%</span></span>
+      </div>
+
+      <!-- ── RESULTADO ANTES ── -->
+      <div class="tr tr-0 tr-sep tr-result">
+        <span class="tc-name">UT. NETA ANTES DE IMPUESTOS</span>
+        <span class="tc-val neg">-$4.294.027</span>
+        <span class="tc-pct"><span class="pct-badge pct-neg">-10.8%</span></span>
+        <span class="tc-val dim">-$5.267.405</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neg">-12.4%</span></span>
+      </div>
+      <div class="tr tr-1">
+        <span class="tc-name">Impuestos</span>
+        <span class="tc-val">$273.000</span>
+        <span class="tc-pct"><span class="pct-badge pct-neutral">1.2%</span></span>
+        <span class="tc-val dim">$904.383</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neutral">3.9%</span></span>
+      </div>
+
+      <!-- ── RESULTADO NETO ── -->
+      <div class="tr tr-0 tr-sep tr-result" style="background:linear-gradient(90deg,rgba(0,200,150,.06),transparent);min-height:52px">
+        <span class="tc-name" style="font-size:14px;letter-spacing:-.02em">RESULTADO NETO</span>
+        <span class="tc-val neg" style="font-size:15px;font-weight:700">-$4.567.027</span>
+        <span class="tc-pct"><span class="pct-badge pct-neg" style="font-size:11px">-12.0%</span></span>
+        <span class="tc-val dim" style="font-size:13px">-$6.171.788</span>
+        <span class="tc-pct dim"><span class="pct-badge pct-neg">-16.3%</span></span>
+      </div>
+
+      <div class="table-footer">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#94A3B8" stroke-width="1.8"><circle cx="10" cy="10" r="7"/><path d="M10 9v5M10 7h.01"/></svg>
+        <span class="footer-note">Fuente: Google Sheets · <strong>EERR</strong> · Solo lectura · Actualizado: 15/05 14:32</span>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+</body>
+</html>

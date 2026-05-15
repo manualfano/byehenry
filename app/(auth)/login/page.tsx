@@ -36,10 +36,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Patrón de fondo industrial */}
       <div
-        className="fixed inset-0 opacity-[0.03]"
+        className="fixed inset-0 opacity-[0.04]"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(0deg, transparent, transparent 40px, #C8A96E 40px, #C8A96E 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, #C8A96E 40px, #C8A96E 41px)",
+            "repeating-linear-gradient(0deg, transparent, transparent 40px, #00C896 40px, #00C896 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, #00C896 40px, #00C896 41px)",
         }}
       />
 

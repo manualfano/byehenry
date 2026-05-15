@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-accent-gold text-background hover:bg-accent-gold/90 font-semibold",
+          "bg-accent-gold text-accent-bone hover:bg-accent-mint-2 font-semibold",
         outline:
           "border border-border bg-transparent text-text-primary hover:border-accent-gold hover:text-accent-gold",
         ghost:

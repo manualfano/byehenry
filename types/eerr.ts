@@ -33,15 +33,16 @@ export interface EERRData {
       general: number;
       cocina: number;
       salon: number;
+      barGeneralExtra30: number;
+      barCocinaExtra30: number;
+      barSalonExtra30: number;
       barSeguridad: number;
       barRRPP: number;
       barDJ: number;
-      barSalonExtra30: number;
-      barCocinaExtra30: number;
-      barGeneralExtra30: number;
       viandasCocina: number;
       viandasLogistica: number;
     };
+    alquileres: number;
     servicios: {
       total: number;
       electricidad: number;
@@ -53,6 +54,8 @@ export interface EERRData {
       tiendaDePuntos: number;
       asesoriaOrdenFinanciero: number;
       contenedores: number;
+      grupoElectrogeno: number;
+      softPOS: number;
       internetYTelefonia: number;
     };
     publicidad: number;

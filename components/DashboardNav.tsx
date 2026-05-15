@@ -3,12 +3,13 @@
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Settings, LogOut } from "lucide-react";
+import { BarChart3, ArrowLeftRight, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/eerr", label: "EERR", icon: BarChart3 },
+  { href: "/cc", label: "Cta. Corriente", icon: ArrowLeftRight },
   { href: "/config", label: "Config", icon: Settings },
 ];
 
