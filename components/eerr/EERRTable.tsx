@@ -254,9 +254,10 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
                   )}
                   <span className={cn(
                     "truncate font-body",
-                    fila.isTotal ? "text-sm font-bold text-text-primary" : fila.isBold ? "text-sm font-semibold text-accent-bone" : "text-sm text-text-secondary",
-                    fila.indent === 0 && "text-accent-bone",
-                    fila.dimLabel && "text-text-secondary"
+                    fila.dimLabel
+                      ? fila.isTotal ? "text-sm font-bold text-text-secondary" : "text-sm font-semibold text-text-secondary"
+                      : fila.isTotal ? "text-sm font-bold text-text-primary" : fila.isBold ? "text-sm font-semibold text-accent-bone" : "text-sm text-text-secondary",
+                    !fila.dimLabel && fila.indent === 0 && "text-accent-bone"
                   )}>
                     {fila.concepto}
                   </span>
