@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const mesKey = searchParams.get("mes") ?? MESES_DISPONIBLES[MESES_DISPONIBLES.length - 1].key;
+  const mes2Key = searchParams.get("mes2") ?? null;
   const forceRefresh = searchParams.get("refresh") === "true";
 
   const mesActual = MESES_DISPONIBLES.find((m) => m.key === mesKey);
@@ -19,23 +20,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Mes no válido" }, { status: 400 });
   }
 
+  const mesComparacion = mes2Key ? MESES_DISPONIBLES.find((m) => m.key === mes2Key) : null;
+  if (mes2Key && !mesComparacion) {
+    return NextResponse.json({ error: "Mes de comparación no válido" }, { status: 400 });
+  }
+
   try {
     const data = await getSheetData(forceRefresh);
     const eerrActual = calcularEERR(data, mesActual);
-
-    // Calcular mes anterior para variaciones
-    const idxActual = MESES_DISPONIBLES.findIndex((m) => m.key === mesKey);
-    let eerrAnterior = null;
-    if (idxActual > 0) {
-      const mesAnterior = MESES_DISPONIBLES[idxActual - 1];
-      eerrAnterior = calcularEERR(data, mesAnterior);
-    }
-
+    const eerrComparacion = mesComparacion ? calcularEERR(data, mesComparacion) : null;
     const lastUpdated = getLastUpdated();
 
     return NextResponse.json({
       eerr: eerrActual,
-      eerrAnterior,
+      eerrComparacion,
       lastUpdated: lastUpdated?.toISOString() ?? null,
       meses: MESES_DISPONIBLES,
     });

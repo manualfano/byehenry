@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,44 +9,43 @@
 }
 
 * {
-  border-color: #2A2A2A;
+  border-color: #E3E8EF;
 }
 
 body {
-  background-color: #0A0A0A;
-  color: #F5F5F5;
+  background-color: #EFF2F6;
+  color: #0A1628;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar industrial */
+/* Scrollbar minimalista light */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #141414;
+  background: #EFF2F6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2A2A2A;
+  background: #CBD5E1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #C8A96E44;
+  background: #00C89640;
 }
 
-/* Animación de fade para cambio de mes */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.25s ease-out;
 }
 
-/* Separador dorado */
+/* Separador mint */
 .gold-separator {
   height: 1px;
-  background: linear-gradient(to right, transparent, #C8A96E44, transparent);
+  background: linear-gradient(to right, transparent, #00C89640, transparent);
 }
