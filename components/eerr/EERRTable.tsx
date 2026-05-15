@@ -197,15 +197,15 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
         </Button>
       </div>
 
-      {/* Cabecera de columnas */}
+      {/* Cabecera de columnas — comparación (viejo) izquierda, principal (nuevo) derecha */}
       <div className={cn("grid px-4 py-2 text-xs font-medium text-text-secondary uppercase tracking-wider border-b border-border bg-surface-hover", gridCols)}>
         <span>Concepto</span>
         {conComparacion ? (
           <>
-            <span className="text-right text-accent-gold">{eerr.mes.label}</span>
-            <span className="text-right text-accent-gold">%</span>
             <span className="text-right text-accent-bone/60">{eerrComparacion!.mes.label}</span>
             <span className="text-right text-accent-bone/60">%</span>
+            <span className="text-right text-accent-gold">{eerr.mes.label}</span>
+            <span className="text-right text-accent-gold">%</span>
           </>
         ) : (
           <>
@@ -263,25 +263,7 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
                   </span>
                 </div>
 
-                {/* Mes principal */}
-                <div className="text-right">
-                  <span className={cn(
-                    "font-body tabular-nums",
-                    fila.isTotal ? "text-sm font-bold" : "text-sm",
-                    montoColor(fila, valor)
-                  )}>
-                    {formatPesos(valor)}
-                  </span>
-                </div>
-                <div className="text-right">
-                  {fila.showPct ? (
-                    <span className="text-xs text-text-secondary tabular-nums">{pct(valor, eerr.ventasBrutas)}</span>
-                  ) : (
-                    <span className="text-text-secondary text-xs">—</span>
-                  )}
-                </div>
-
-                {/* Mes comparación */}
+                {/* Mes comparación (viejo) — izquierda */}
                 {conComparacion && (
                   <>
                     <div className="text-right">
@@ -302,6 +284,24 @@ export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
                     </div>
                   </>
                 )}
+
+                {/* Mes principal (nuevo) — derecha */}
+                <div className="text-right">
+                  <span className={cn(
+                    "font-body tabular-nums",
+                    fila.isTotal ? "text-sm font-bold" : "text-sm",
+                    montoColor(fila, valor)
+                  )}>
+                    {formatPesos(valor)}
+                  </span>
+                </div>
+                <div className="text-right">
+                  {fila.showPct ? (
+                    <span className="text-xs text-text-secondary tabular-nums">{pct(valor, eerr.ventasBrutas)}</span>
+                  ) : (
+                    <span className="text-text-secondary text-xs">—</span>
+                  )}
+                </div>
               </div>
             </div>
           );
