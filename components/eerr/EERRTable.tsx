@@ -113,7 +113,6 @@ const GRUPOS: Record<string, string[]> = {
   costo_operativo:  ["sueldos_header", "alquileres", "servicios_header", "publicidad", "produccion", "gastos_admin", "limpieza", "mantenimiento", "otras_deudas"],
   sueldos_header:   ["s_general", "s_cocina", "s_salon", "s_bar_gen_30", "s_bar_coc_30", "s_bar_sal_30", "s_bar_seg", "s_bar_rrpp", "s_bar_dj", "s_viandas_coc", "s_viandas_log"],
   servicios_header: ["sv_elec", "sv_agua", "sv_gas", "sv_emerg", "sv_seg", "sv_seghi", "sv_tienda", "sv_asesor", "sv_cont", "sv_electrogeno", "sv_softpos", "sv_inet"],
-  res_antes_imp:    ["impuestos"],
 };
 
 function pct(monto: number, base: number): string {
@@ -128,7 +127,7 @@ function montoColor(fila: Fila, valor: number): string {
 
 export function EERRTable({ eerr, eerrComparacion }: EERRTableProps) {
   const [expanded, setExpanded] = useState<Set<string>>(
-    new Set(["ventas_brutas", "funcionamiento", "cmv_total", "costo_operativo", "sueldos_header", "servicios_header", "res_antes_imp"])
+    new Set(["ventas_brutas", "funcionamiento", "cmv_total", "costo_operativo", "sueldos_header", "servicios_header"])
   );
   const [copied, setCopied] = useState(false);
 
